@@ -1,0 +1,24 @@
+{
+  "name": "ugochain",
+  "version": "1.0.0",
+  "description": "A Private Blockchain",
+  "main": "simpleChain.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/0xUgochukwu/ugoChain.git"
+  },
+  "author": "Ugochukwu Chukwuma",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/0xUgochukwu/ugoChain/issues"
+  },
+  "homepage": "https://github.com/0xUgochukwu/ugoChain#readme",
+  "dependencies": {
+    "crypto": "^1.0.1",
+    "crypto-js": "^4.1.1",
+    "level": "^8.0.0"
+  }
+}
