@@ -85,10 +85,10 @@ class Blockchain {
 
         // Compare
         if (blockHash === validBlockHash) {
-            return true;
+            return "Valid Block";
         } else {
             console.log('Block #' + blockHeight + ' invalid hash:\n' + blockHash + '<>' + validBlockHash);
-            return false;
+            return "Invalid Block";
         }
     }
 
@@ -121,8 +121,13 @@ class Blockchain {
         if (errorLog.length > 0) {
             console.log('Block errors = ' + errorLog.length);
             console.log('Blocks: ' + errorLog);
+            return {
+                NumberOfErrors: errorLog.length,
+                Blocks: errorLog
+            }
         } else {
             console.log('No errors detected');
+            return 'Your BlockChain is Valid';
         }
     }
 }

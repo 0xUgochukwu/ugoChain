@@ -19,6 +19,8 @@ class BlockController {
         this.initializeMockData();
         this.getBlockByIndex();
         this.postNewBlock();
+        this.validateBlock();
+        this.validateChain();
     }
 
     /**
@@ -48,6 +50,20 @@ class BlockController {
                 res.send("Please enter data to add a new block");
             }
         });
+    }
+
+    // Validate a Block in the Blockchain 
+    validateBlock() {
+        this.app.get("/api/validate/block/:index", async (req, res) => {
+            res.send(await blockchain.validateBlock(req.params.index));
+        })
+    }
+
+    // Validate the Blockchain
+    validateChain() {
+        this.app.get("/api/validate/chain", async (req, res) => {
+            res.send(await blockchain.validateChain());
+        })
     }
     /**
      * Help method to inizialized Mock dataset, adds 10 test blocks to the blocks array
