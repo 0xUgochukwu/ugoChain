@@ -2,9 +2,10 @@
     Helper function to interact with LevelDB
  */
 
-    const level = require('level');
+    const { Level } = require('level');
     const chainDB = './chaindata';
-    const db = level(chainDB);
+    const db = new Level(chainDB, { valueEncoding: 'json' });
+
     
     var exports = module.exports = {};
     
@@ -19,24 +20,37 @@
     
     
     };
+
+
     
     //get Block height
-    exports.getMaxHeight = function () {
-        return new Promise(function (resolve, reject) {
-            let chainLength = 0;
-            let keyStream = db.createKeyStream();
-            keyStream.on('data', function (data) {
+    exports.getMaxHeight = async function () {
+        // return new Promise(function (resolve, reject) {
+        //     let chainLength = 0;
+        //     let keyStream = db.createKeyStream();
+        //     keyStream.on('data', function (data) {
+        //         chainLength += 1;
+        //     })
+        //         .on('error', function(err) {
+        //             reject(err);
+        //         })
+        //         .on('close', function () {
+        //             //When the stream is finished, return found max height.
+        //             resolve(chainLength);
+        //         });
+        // });
+
+        let chainLength = 0;
+        try {
+            for await (const {height, data} of db.iterator()) {
                 chainLength += 1;
-            })
-                .on('error', function(err) {
-                    reject(err);
-                })
-                .on('close', function () {
-                    //When the stream is finished, return found max height.
-                    resolve(chainLength);
-                });
-        });
-    
+            }
+          } catch (err) {
+            console.error(err)
+          }
+
+          return chainLength;
+          
     }
     
     

@@ -17,8 +17,10 @@
   },
   "homepage": "https://github.com/0xUgochukwu/ugoChain#readme",
   "dependencies": {
+    "body-parser": "^1.20.1",
     "crypto": "^1.0.1",
     "crypto-js": "^4.1.1",
+    "express": "^4.18.2",
     "level": "^8.0.0"
   }
 }

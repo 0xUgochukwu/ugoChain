@@ -7,20 +7,9 @@ const l_DB = require('./leveldbfunctions.js');
 
 const SHA256 = require('crypto-js/sha256');
 
+// Import Block Class
+const Block = require("./block.js");
 
-/* ===== Block Class ==============================
-|  Class with a constructor for block 			   |
-|  ===============================================*/
-
-class Block {
-    constructor(data) {
-        this.hash = "",
-            this.height = 0,
-            this.body = data,
-            this.time = 0,
-            this.previousBlockHash = ""
-    }
-}
 
 /* ===== Blockchain Class ==========================
 |  Class with a constructor for new blockchain 		|
@@ -63,6 +52,8 @@ class Blockchain {
         await l_DB.addBlock(newBlock.height, JSON.stringify(newBlock));
 
         console.log("Added Block #" + newBlock.height + " w/ hash " + newBlock.hash + " (previous hash: " + newBlock.previousBlockHash + ")");
+
+        return newBlock.height;
     }
 
     // Get block height
@@ -138,21 +129,24 @@ class Blockchain {
 
 
 //Create Blockchain instance
-let blockchain = new Blockchain();
+// let blockchain = new Blockchain();
 
 //Add 20 blocks
-(function theLoop(i) {
-    setTimeout(function () {
-        blockchain.addBlock(new Block("Block " + i)).then(() =>{
-            if (--i) theLoop(i);
-        })
-    }, 100);
-})(20);
+// (function theLoop(i) {
+//     setTimeout(function () {
+//         blockchain.addBlock(new Block("Block " + i)).then(() =>{
+//             if (--i) theLoop(i);
+//         })
+//     }, 100);
+// })(20);
 
 //Validate chain
 
-setTimeout(function () {
-    console.log("-------");
-    console.log("Validating chain");
-    blockchain.validateChain().then;
-}, 2500)
+// setTimeout(function () {
+//     console.log("-------");
+//     console.log("Validating chain");
+//     blockchain.validateChain().then;
+// }, 2500)
+
+// Export class
+module.exports = Blockchain;
