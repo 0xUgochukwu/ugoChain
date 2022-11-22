@@ -27,9 +27,7 @@ class BlockController {
     getBlockByIndex() {
         this.app.get("/api/block/:index", async (req, res) => {
             // Add your code here
-            let block = await {...blockchain.getBlock(req.params.index)};
-            res.send(block);
-            console.log(block);
+            res.send(await blockchain.getBlock(req.params.index));
         });
     }
 
@@ -42,8 +40,8 @@ class BlockController {
             if (req.body.data){
                 let newBlockHeight = await blockchain.addBlock(new Block(req.body.data));
                 // console.log("New height is " + newBlockHeight);
-                console.log(blockchain.getBlock(newBlockHeight));
-                res.send(blockchain.getBlock(newBlockHeight));
+                
+                res.send(await blockchain.getBlock(newBlockHeight));
 
             }
             else {
