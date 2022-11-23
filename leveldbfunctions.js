@@ -3,7 +3,7 @@
  */
 
     const { Level } = require('level');
-    const chainDB = './chaindata';
+    const chainDB = './ugoChain';
     const db = new Level(chainDB, { valueEncoding: 'json' });
 
     
@@ -25,20 +25,6 @@
     
     //get Block height
     exports.getMaxHeight = async function () {
-        // return new Promise(function (resolve, reject) {
-        //     let chainLength = 0;
-        //     let keyStream = db.createKeyStream();
-        //     keyStream.on('data', function (data) {
-        //         chainLength += 1;
-        //     })
-        //         .on('error', function(err) {
-        //             reject(err);
-        //         })
-        //         .on('close', function () {
-        //             //When the stream is finished, return found max height.
-        //             resolve(chainLength);
-        //         });
-        // });
 
         let chainLength = 0;
         try {

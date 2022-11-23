@@ -85,10 +85,10 @@ class Blockchain {
 
         // Compare
         if (blockHash === validBlockHash) {
-            return "Valid Block";
+            return `No errors detected! \nBlock ${blockHeight} is a Valid Block`;
         } else {
             console.log('Block #' + blockHeight + ' invalid hash:\n' + blockHash + '<>' + validBlockHash);
-            return "Invalid Block";
+            return `Errors Detected!\nBlock ${blockHeight} is an Invalid Block`;
         }
     }
 
@@ -127,31 +127,12 @@ class Blockchain {
             }
         } else {
             console.log('No errors detected');
-            return 'Your BlockChain is Valid';
+            return `No errors detected! \nugoChain is Valid`;
         }
     }
 }
 
 
-//Create Blockchain instance
-// let blockchain = new Blockchain();
-
-//Add 20 blocks
-// (function theLoop(i) {
-//     setTimeout(function () {
-//         blockchain.addBlock(new Block("Block " + i)).then(() =>{
-//             if (--i) theLoop(i);
-//         })
-//     }, 100);
-// })(20);
-
-//Validate chain
-
-// setTimeout(function () {
-//     console.log("-------");
-//     console.log("Validating chain");
-//     blockchain.validateChain().then;
-// }, 2500)
 
 // Export class
 module.exports = Blockchain;

@@ -1,7 +1,7 @@
 const SHA256 = require('crypto-js/sha256');
 const e = require('express');
 const Block = require('./block.js');
-const Blockchain= require("./simpleChain.js");
+const Blockchain= require("./ugoChain.js");
 const ugoChain = new Blockchain();
 
 /**
@@ -61,7 +61,7 @@ class BlockController {
 
     // Validate the Blockchain
     validateChain() {
-        this.app.get("/api/validate/chain", async (req, res) => {
+        this.app.get("/api/validate/ugochain", async (req, res) => {
             res.send(await ugoChain.validateChain());
         })
     }
