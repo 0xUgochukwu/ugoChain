@@ -6,8 +6,7 @@ const ugoChain = new Blockchain();
 
 // Include Level db helper functions
 //Include LevelDB helper functions
-const levelDB = require('../leveldbfunctions.js');
-const db =  new levelDB();
+const db = require('./leveldbfunctions.js');
 
 // Import Helper Functions
 const helper = require('./helper.js');
@@ -31,6 +30,9 @@ class BlockController {
         this.validateBlock();
         this.validateChain();
         this.requestValidation();
+        this.validateMessageSignature();
+        this.getStarByHash();
+        this.getStarByAddress();
     }
 
     /**
@@ -57,7 +59,7 @@ class BlockController {
 
             }
             else if (req.body.star && req.body.address) {
-                let star = req.body.star;
+                let star = JSON.parse(req.body.star);
                 let address = req.body.address;
                 // Check if address has a vaildated Signature
                 try {
@@ -141,6 +143,71 @@ class BlockController {
             }
         })
     }
+
+    // Validate a Message Signature
+
+    validateMessageSignature() {
+        this.app.post("/api/message-signature/validate", async (req, res) => {
+            if (req.body.address && req.body.signature) {
+
+                let requestData = null;
+
+                try {
+                    requestData = await db.validateSignature(req.body.address, req.body.signature);
+                } catch (e) {
+                    requestData = 'Unable to verify signature. Session expired after 5 minutes. Re-start the process.'
+                }
+
+                res.send(requestData);
+            }
+            else {
+                res.send("Please enter an address and signature to validate");
+            }
+        })
+    }
+
+
+
+    // Get Star by it's Block hash
+    
+    getStarByHash() {
+        this.app.get("api/stars/:hash", async (req, res) => {
+            const hash = req.params.hash ?
+            encodeURIComponent(req.params.hash) :
+            '0';
+
+            console.log(hash);
+
+            try {
+                const starBlock = await ugoChain.getBlockByHash(hash);
+                res.send(starBlock);
+            } catch (e) {
+                console.log('Block not found')
+                res.send('Block not found');
+            }
+        })
+    }
+
+    // Get Star by the address that uploaded it
+    getStarByAddress() {
+        this.app.get("api/stars/:address", async (req, res) => {
+            const address = req.params.address ?
+            encodeURIComponent(req.params.address) :
+            '0';
+
+            console.log(address);
+
+            try {
+                const starBlock = await ugoChain.getBlockByAddress(address);
+                res.send(starBlock);
+            } catch (e) {
+                console.log('Block not found')
+                res.send('Block not found');
+            }
+        })
+    }
+
+
     /**
      * Help method to inizialized Mock dataset, adds 10 test blocks to the blocks array
      */

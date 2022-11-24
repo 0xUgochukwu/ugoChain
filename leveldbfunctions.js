@@ -129,26 +129,46 @@
     }
 
     // Check if a wallet address is validated
-    exports.isValidatedAddress = async function (key) {
+    exports.isValidatedAddress = async function (address) {
         return new Promise(function (resolve, reject) {
-            mp.get(key, function (err, value) {
+            mp.get(address, function (err, value) {
                 if (err) {
                     if (err.type == 'NotFoundError') {
                         reject('Address not found in mempool');
                     }
                     reject("Error: "+ err);
                 }
-                value = JSON.parse(value);
+                let value = JSON.parse(value);
                 resolve(value.messageSignature === 'valid');
             })
         })
+    }
+
+    // Remove an Address from the mempool / Invalidate Address in the Mempool
+
+    exports.invalidateAddress = async function(address) {
+        return new Promise(function (resolve, reject) {
+
+            //Invalidate initial request
+            console.log('Invalidating request for ' + addr);
+            mp.del(address, function (err) {
+                if(err) {
+                    console.log('Error while deleting junk data')
+                    reject('Unable to invalidate request');
+                }
+                console.log('Record with address ' + addr + ' was deleted');
+                resolve("Request invalidated");
+            })
+
+
+        });
     }
     
     
     //Get block
     exports.getBlock = function (key) {
         // key = key.toString()
-        return new Promise(function (resolve, reject) {
+        return new Promise((resolve, reject) => {
             db.get(key, function (err, value) {
                 if (err) reject('Block ' + key + ' not found!');
                 // console.log('LEVEL Value = ' + value);
@@ -158,4 +178,57 @@
             })
         })
     
+    }
+
+
+    // Get Block by hash
+
+    exports.getBlockByHash = function (hash) {
+        return new Promise( async (resolve, reject) => {
+            try {
+                for await (const {height, data} of db.iterator()) {
+                    console.log(data.key, '=', data.value)
+                    block = JSON.parse(data.value);
+                    if (hash === block.hash) {
+                        console.log(block)
+                        block.body.star.storyDecoded = new Buffer(block.body.star.story, 'hex').toString();
+                        resolve(block);
+                    }
+                }
+              } catch (err) {
+                console.error("Block not found\n Error: " + err);
+                reject(err);
+              }
+        })
+    }
+
+
+    // Get Block by Address
+
+    exports.getBlockByAddress = function (address) {
+        return new Promise( async (resolve, reject) => {
+            
+            let blocks = [];
+
+            try {
+                for await (const {height, data} of db.iterator()) {
+                    console.log(data.key, '=', data.value)
+                    console.log('==================')
+
+                    block = JSON.parse(data.value);
+                    if (address === block.body.address) {
+                        console.log(block)
+                        block.body.star.storyDecoded = new Buffer.from(block.body.star.story, 'hex').toString();
+                        // resolve(block);
+                        blocks.push(block);
+                        console.log('----------');
+                    }
+                }
+              } catch (err) {
+                console.log("Block not found\n Error: " + err);
+                reject(err);
+              }
+
+              resolve(blocks);
+        })
     }
