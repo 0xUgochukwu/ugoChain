@@ -6,6 +6,16 @@
     const chainDB = './ugoChain';
     const db = new Level(chainDB, { valueEncoding: 'json' });
 
+    // Create a Mempool to store requests seprately
+    const mempoolDB = './chaindata/mempool';
+    const mp = new Level(mempoolDB, { valueEncoding: 'json' });
+
+    // Require Bitcoin Message
+    const bitcoinMessage = require('bitcoinjs-message');
+
+    // Define timeout
+    const MINUTES = 5;
+
     
     var exports = module.exports = {};
     
@@ -37,6 +47,101 @@
 
           return chainLength;
           
+    }
+
+    // Create a new request
+    exports.createRequest = async function (address) {
+        return new Promise((resolve, reject) => {
+            let timestamp = Date.now();
+            let validationWindow = MINUTES * 60; //5 minutes
+            let message = `${address}:${timestamp}:starRegistry`;
+
+            let data = {
+                "address": address,
+                "requestTimeStamp": timestamp,
+                "message": message,
+                "validationWindow": validationWindow
+            }
+            // stringify data
+            console.log('calling put')
+            console.log(data.address);
+            console.log(data)
+            mp.put(address, JSON.stringify(data), function (err) {
+                if (err) reject('Block ' + key + ' submission failed', err);
+                resolve(data);
+            })
+        })
+    }
+
+    // validate a wallet address' signature
+
+    exports.validateSignature = async function (address, signature) {
+        return new Promise((resolve, reject) => {
+            mp.get(address, (err, value) => {
+                if (err){
+                    if (err.type == 'NotFoundError') {
+                        reject('Address not found in mempool');
+                    }
+
+                    reject("Error: "+ err);
+                }
+
+                value = JSON.parse(value);
+                let xMinutes = MINUTES * 60 * 1000;
+                let xMinutesBeforeNow = Date.now() - xMinutes;
+
+                const isExpired = value.requestTimeStamp < xMinutesBeforeNow;
+
+                let isValidMessage = false;
+
+                if (isExpired) {
+                    //if expired, restart process
+                    value.validationWindow = 0
+                    value.messageSignature = 'invalid'
+                    console.log('Unable to verify signature. Session expired after ' + MINUTES + 'minutes.');
+
+                    //delete junk data
+                    mp.del(address, function (err) {
+                        if(err) {
+                            console.log('Error while deleting junk data')
+                        }
+                    });
+
+                    reject('User session expired after 5 minutes');
+                }
+                else {
+                    console.log("Message Signature is not expired");
+                    value.validationWindow = Math.floor((value.requestTimeStamp - xMinutesBeforeNow) / 1000);
+                    isValidMessage = bitcoinMessage.verify(value.message, address, signature);
+                    value.messageSignature = isValidMessage ? 'valid' : 'invalid';
+
+                    mp.put(address, JSON.stringify(value));
+                    const returnData = {
+                        registerStar: !isExpired && isValidMessage,
+                        status: value
+                    }
+
+                    resolve(returnData);
+                }
+                
+            })
+        })
+    }
+
+    // Check if a wallet address is validated
+    exports.isValidatedAddress = async function (key) {
+        return new Promise(function (resolve, reject) {
+            mp.get(key, function (err, value) {
+                if (err) {
+                    if (err.type == 'NotFoundError') {
+                        reject('Address not found in mempool');
+                    }
+                    reject("Error: "+ err);
+                }
+                value = JSON.parse(value);
+                resolve(value.messageSignature === 'valid');
+            })
+        })
     }
     
     

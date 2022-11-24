@@ -130,6 +130,7 @@ class Blockchain {
             return `No errors detected! \nugoChain is Valid`;
         }
     }
+
 }
 
 

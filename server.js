@@ -4,6 +4,15 @@ const Block = require('./block.js');
 const Blockchain= require("./ugoChain.js");
 const ugoChain = new Blockchain();
 
+// Include Level db helper functions
+//Include LevelDB helper functions
+const levelDB = require('../leveldbfunctions.js');
+const db =  new levelDB();
+
+// Import Helper Functions
+const helper = require('./helper.js');
+const help = new helper();
+
 /**
  * Controller Definition to encapsulate routes to work with blocks
  */
@@ -21,6 +30,7 @@ class BlockController {
         this.postNewBlock();
         this.validateBlock();
         this.validateChain();
+        this.requestValidation();
     }
 
     /**
@@ -46,6 +56,49 @@ class BlockController {
                 res.send(await ugoChain.getBlock(newBlockHeight));
 
             }
+            else if (req.body.star && req.body.address) {
+                let star = req.body.star;
+                let address = req.body.address;
+                // Check if address has a vaildated Signature
+                try {
+                    const validated = await db.isValidatedAddress(address);
+                } catch (e) {
+                    const data = {
+                        respone: e
+                    }
+                    res.send(data);
+                }
+
+                try {
+                    // Check if star has all the required fields
+                    help.validStarData(star);
+
+                    // Encode Story to Hex 
+                    star.story = new Buffer.from(star.story).toString('hex');
+
+                    // Check if the address has a validated signature in our mempool
+                    if (await db.isValidatedAddress(address)) {
+                        // Add the star to the blockchain
+                        let newBlockHeight = await ugoChain.addBlock(new Block(star));
+                        // console.log("New height is " + newBlockHeight);
+                        console.log('The newly added block got height ' + newBlockHeight);
+
+                        try {
+                            // Remove the address from the mempool
+                            await db.invalidateAddress(address);
+                        } catch (e) {
+                            console.log(e);
+                        }
+
+                        res.send(await ugoChain.getBlock(newBlockHeight));
+                    }
+                } catch (e) {
+                    const data = {
+                        response: e
+                    }
+                    res.send(data);
+                }
+            }
             else {
                 res.send("Please enter data to add a new block");
             }
@@ -63,6 +116,29 @@ class BlockController {
     validateChain() {
         this.app.get("/api/validate/ugochain", async (req, res) => {
             res.send(await ugoChain.validateChain());
+        })
+    }
+
+    // Request Validation
+    requestValidation() {
+        this.app.post("/api/requestValidation", async (req, res) => {
+            if (req.body.address){
+                console.log("Requesting validation for " + req.body.address);
+
+                let requestData = null;
+                try {
+                    requestData = await db.requestValidation(req.body.address);
+                } catch (e) {
+                    console.log("Caught exception - Wallet address not found");
+                    requestData = await db.createRequest(address);
+                }
+
+                // Return the request data
+                res.send(requestData);
+            }
+            else {
+                res.send("Please enter an address to validate");
+            }
         })
     }
     /**

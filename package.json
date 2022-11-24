@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/0xUgochukwu/ugoChain#readme",
   "dependencies": {
+    "bitcoinjs-message": "^2.2.0",
     "body-parser": "^1.20.1",
     "crypto": "^1.0.1",
     "crypto-js": "^4.1.1",
